@@ -8,6 +8,14 @@ Display Git commit history with [conventional commit](https://www.conventionalco
 - Automatically detects and displays appropriate emojis based on conventional commit types
 - Relative timestamps for commits
 
+## Example Output
+
+```
+  * abc123f feat: ✨ Add new feature (2 days ago)
+  * def456a fix: 🐛 Fix critical bug (5 hours ago)
+  * ghi789b docs: 📚 Update documentation (1 hour ago)
+```
+
 ## Installation
 
 ### Cargo
@@ -42,14 +50,6 @@ function auto_pwd --on-variable PWD
         devmoji-log
     end
 end
-```
-
-## Example Output
-
-```
-  * abc123f feat: ✨ Add new feature (2 days ago)
-  * def456a fix: 🐛 Fix critical bug (5 hours ago)
-  * ghi789b docs: 📚 Update documentation (1 hour ago)
 ```
 
 ## Inspiration
