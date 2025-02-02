@@ -10,8 +10,14 @@ Display Git commit history with [conventional commit](https://www.conventionalco
 
 ## Installation
 
+### Cargo
 ```bash
 cargo install --git https://github.com/dsully/devmoji-log
+```
+
+### Homebrew
+```bash
+brew install dsully/tap/devmoji-log
 ```
 
 ## Usage
