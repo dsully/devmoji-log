@@ -2,7 +2,7 @@
 authors = [ "Dan Sully" ]
 categories = [ "command-line-utilities" ]
 description = "Devmoji git log"
-edition = "2021"
+edition = "2024"
 homepage = "https://github.com/dsully/devmoji-log"
 keywords = [ "git" ]
 license = "MIT"
@@ -16,13 +16,13 @@ name = "devmoji-log"
 path = "src/main.rs"
 
 [dependencies]
-anyhow = "1.0.95"
-clap = { version = "4.5.27", features = [ "derive" ] }
+anyhow = "1.0.96"
+clap = { version = "4.5.30", features = [ "derive" ] }
 colored = "3.0.0"
 emojis = "0.6.4"
 git-conventional = "0.12.9"
 git2 = { version = "0.20.0", default-features = false }
-jiff = "0.1.29"
+jiff = "0.2.1"
 
 [profile.dev]
 debug = 0
