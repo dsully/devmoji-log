@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::fmt::Write;
 use std::string::ToString;
 
 use anyhow::Result;
@@ -116,7 +117,7 @@ impl Commit {
                 let mut header = type_str;
 
                 if let Some(scope_str) = scope {
-                    header.push_str(&format!("({})", scope_str.bold()));
+                    write!(header, "({})", scope_str.bold())?;
                 }
 
                 if breaking {
@@ -135,7 +136,7 @@ impl Commit {
                 .relative(&self.timestamp),
         )?;
 
-        formatted.push_str(&format!(" ({} ago)", &printer.span_to_string(&span)));
+        write!(formatted, " ({} ago)", &printer.span_to_string(&span))?;
 
         Ok(formatted.trim().lines().next().unwrap_or_default().to_string())
     }
