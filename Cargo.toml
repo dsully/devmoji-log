@@ -20,7 +20,7 @@ anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 colored = "3"
 emojis = "0.7.0"
-git2 = { version = "0.20.0", default-features = false }
+git2 = { version = "0.20.4", default-features = false }
 git-conventional = "0.12.9"
 jiff = "0.2"
 
