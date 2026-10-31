@@ -20,7 +20,7 @@ pub struct Commit {
 impl Commit {
     #[must_use]
     pub fn id(&self) -> String {
-        hyperlink(&format!("{}/commit/{}", &self.url, &self.id), &self.id)
+        hyperlink(&format!("{}/commit/{}", self.url, self.id), &self.id)
     }
 
     pub fn last_n_commits(n: usize) -> Result<Vec<Commit>> {
@@ -43,7 +43,7 @@ impl Commit {
                             .as_object()
                             .short_id()
                             .ok()
-                            .and_then(|buf| buf.as_str().map(ToString::to_string))
+                            .and_then(|buf| buf.as_str().ok().map(ToString::to_string))
                             .unwrap_or_default(),
                         message: commit.message().unwrap_or_default().to_string(),
                         timestamp: zoned_from_time(&commit.time()),
@@ -136,7 +136,7 @@ impl Commit {
                 .relative(&self.timestamp),
         )?;
 
-        write!(formatted, " ({} ago)", &printer.span_to_string(&span))?;
+        write!(formatted, " ({} ago)", printer.span_to_string(&span))?;
 
         Ok(formatted.trim().lines().next().unwrap_or_default().to_string())
     }

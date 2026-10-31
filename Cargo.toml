@@ -1,7 +1,6 @@
 [package]
 name = "devmoji-log"
-version = "0.0.2"
-authors = ["Dan Sully"]
+version = "0.0.3"
 edition = "2024"
 description = "Devmoji git log"
 readme = "README.md"
@@ -19,9 +18,9 @@ path = "src/main.rs"
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 colored = "3"
-emojis = "0.7.0"
-git2 = { version = "0.20.0", default-features = false }
-git-conventional = "0.12.9"
+emojis = "0.9.1"
+git-conventional = "1"
+git2 = { version = "0.21", default-features = false }
 jiff = "0.2"
 
 # https://stackoverflow.com/a/74545562/81120
@@ -38,7 +37,7 @@ correctness = { level = "deny", priority = -1 }
 dbg_macro = "warn"
 debug_assert_with_mut_call = "warn"
 doc_markdown = { level = "allow", priority = 1 }
-empty_enum = "warn"
+empty_enums = "warn"
 enum_glob_use = "warn"
 expl_impl_clone_on_copy = "warn"
 explicit_deref_methods = "warn"
@@ -92,7 +91,6 @@ single_match_else = "warn"
 string_add = "warn"
 string_add_assign = "warn"
 string_lit_as_bytes = "warn"
-string_to_string = "warn"
 style = { level = "deny", priority = -1 }
 suspicious = { level = "deny", priority = -1 }
 trait_duplication_in_bounds = "warn"
@@ -120,4 +118,3 @@ debug = false
 strip = true
 panic = "abort"
 codegen-units = 1
-
