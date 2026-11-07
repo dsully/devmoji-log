@@ -28,8 +28,7 @@ impl Commit {
         let commits = git2::Repository::discover(std::env::current_dir()?)
             .and_then(|repo| {
                 disable_precompose_unicode(&repo)?;
-                let remote = repo.find_remote("origin")?;
-                let url = remote.url().unwrap_or_default().to_string();
+                let url = origin_fetch_url(&repo.config()?)?;
 
                 let mut revwalk = repo.revwalk()?;
 
@@ -179,6 +178,40 @@ fn commit_emoji(key: &str) -> Option<&'static str> {
     }
 }
 
+/// Fetch URL of `origin` with `url.<base>.insteadOf` applied, as `Remote::url()` reports it.
+///
+/// `find_remote` duplicates the whole config into a snapshot and parses refspecs, tags and prune
+/// settings we never use; this reads only the two keys it needs.
+fn origin_fetch_url(config: &git2::Config) -> Result<String, git2::Error> {
+    let url = match config.get_string("remote.origin.url") {
+        Ok(url) => url,
+        Err(e) if e.code() == git2::ErrorCode::NotFound => {
+            // A remote with only a pushurl still exists; libgit2 reports no fetch URL for it.
+            config.get_string("remote.origin.pushurl")?;
+            return Ok(String::new());
+        }
+        Err(e) => return Err(e),
+    };
+
+    // Longest matching prefix wins; the first one seen wins ties (libgit2 `apply_insteadof`).
+    let mut best: Option<(usize, String)> = None;
+    let mut entries = config.entries(Some(r"url\..*\.insteadof"))?;
+    while let Some(entry) = entries.next() {
+        let entry = entry?;
+        let (Ok(name), Ok(prefix)) = (entry.name(), entry.value()) else {
+            continue;
+        };
+        if url.starts_with(prefix) && prefix.len() > best.as_ref().map_or(0, |b| b.0) {
+            best = Some((prefix.len(), name["url.".len()..name.len() - ".insteadof".len()].to_string()));
+        }
+    }
+
+    Ok(match best {
+        Some((len, base)) => format!("{base}{}", &url[len..]),
+        None => url,
+    })
+}
+
 unsafe extern "C" {
     // Not bound by libgit2-sys; exported by the vendored static libgit2.
     fn git_config_backend_from_string(
@@ -226,4 +259,34 @@ fn zoned_from_time(time: &git2::Time) -> Zoned {
         .to_zoned(TimeZone::fixed(
             Offset::from_seconds(time.offset_minutes() * 60).unwrap(),
         ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::origin_fetch_url;
+
+    #[test]
+    fn origin_fetch_url_matches_find_remote() {
+        let cases = [
+            "[remote \"origin\"]\n\turl = https://github.com/a/b\n",
+            "[remote \"origin\"]\n\turl = \n",
+            "[remote \"origin\"]\n\tpushurl = git@github.com:a/b\n",
+            "[remote \"origin\"]\n\turl = gh:a/b\n[url \"https://github.com/\"]\n\tinsteadOf = gh:\n[url \"https://x/\"]\n\tinsteadOf = g\n[url \"https://y/\"]\n\tinsteadOf = gh:\n",
+            "[remote \"origin\"]\n\turl = gh:a/b\n[url \"ssh://g/\"]\n\tpushInsteadOf = gh:\n",
+            "[remote \"upstream\"]\n\turl = https://github.com/a/b\n",
+        ];
+        for (i, cfg) in cases.iter().enumerate() {
+            let dir = std::env::temp_dir().join(format!("devmoji-log-test-{}-{i}", std::process::id()));
+            let repo = git2::Repository::init(&dir).unwrap();
+            let path = dir.join(".git/config");
+            let mut contents = std::fs::read_to_string(&path).unwrap();
+            contents.push_str(cfg);
+            std::fs::write(&path, contents).unwrap();
+
+            let expected = repo.find_remote("origin").map(|r| r.url().unwrap_or_default().to_string());
+            let actual = origin_fetch_url(&repo.config().unwrap());
+            assert_eq!(expected.ok(), actual.ok(), "case {i}: {cfg}");
+            std::fs::remove_dir_all(&dir).unwrap();
+        }
+    }
 }
