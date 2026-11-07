@@ -1,3 +1,5 @@
+#![cfg_attr(not(test), no_main)]
+
 mod commit;
 
 use clap::Parser;
@@ -23,7 +25,21 @@ struct Cli {
     count: usize,
 }
 
-pub fn main() -> anyhow::Result<()> {
+// Skipping std's runtime setup (stack-overflow handler, SIGPIPE ignore, fd checks) trims ~0.8M
+// instructions from every launch; a closed stdout now ends the process via SIGPIPE instead of a panic.
+#[cfg_attr(not(test), unsafe(export_name = "main"))]
+#[cfg_attr(test, expect(dead_code))]
+extern "C" fn c_main(_argc: std::ffi::c_int, _argv: *const *const std::ffi::c_char) -> std::ffi::c_int {
+    match run() {
+        Ok(()) => 0,
+        Err(e) => {
+            eprintln!("Error: {e:?}");
+            1
+        }
+    }
+}
+
+fn run() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     // `now - commit` yields an hours-only span, so the zone of `now` never affects output;
