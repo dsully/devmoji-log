@@ -1,7 +1,8 @@
 mod commit;
 
 use clap::Parser;
-use jiff::Zoned;
+use jiff::Timestamp;
+use jiff::tz::TimeZone;
 use jiff::fmt::friendly::{Designator, Spacing, SpanPrinter};
 
 use crate::commit::Commit;
@@ -25,7 +26,9 @@ struct Cli {
 pub fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
-    let now = Zoned::now();
+    // `now - commit` yields an hours-only span, so the zone of `now` never affects output;
+    // UTC skips jiff's system tz lookup, which walks the whole zoneinfo directory (~1ms).
+    let now = Timestamp::now().to_zoned(TimeZone::UTC);
     let commits = Commit::last_n_commits(cli.count)?;
 
     if !commits.is_empty() {
