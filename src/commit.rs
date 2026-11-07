@@ -32,8 +32,8 @@ impl Commit {
 
                 let mut revwalk = repo.revwalk()?;
 
+                // Sort::TIME makes libgit2 walk the whole history up front; the default walk is lazy and date-ordered.
                 revwalk.push_head()?;
-                revwalk.set_sorting(git2::Sort::TIME)?;
 
                 Ok(revwalk
                     .filter_map(|oid_result| oid_result.ok().and_then(|oid| repo.find_commit(oid).ok()))
