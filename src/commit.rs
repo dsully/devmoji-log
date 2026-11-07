@@ -27,6 +27,7 @@ impl Commit {
         //
         let commits = git2::Repository::discover(std::env::current_dir()?)
             .and_then(|repo| {
+                disable_precompose_unicode(&repo)?;
                 let remote = repo.find_remote("origin")?;
                 let url = remote.url().unwrap_or_default().to_string();
 
@@ -176,6 +177,40 @@ fn commit_emoji(key: &str) -> Option<&'static str> {
         "wip" => Some("🚧"),                                     // construction
         _ => None,
     }
+}
+
+unsafe extern "C" {
+    // Not bound by libgit2-sys; exported by the vendored static libgit2.
+    fn git_config_backend_from_string(
+        out: *mut *mut libgit2_sys::git_config_backend,
+        cfg: *const std::ffi::c_char,
+        len: usize,
+        opts: *mut std::ffi::c_void,
+    ) -> std::ffi::c_int;
+}
+
+/// With `core.precomposeunicode` on (macOS default) every ref lookup calls `iconv_open`, which dlopens
+/// libiconv modules (~1.4ms); our only ref name is the ASCII `HEAD`, so disable it in memory.
+fn disable_precompose_unicode(repo: &git2::Repository) -> Result<(), git2::Error> {
+    use git2::Binding;
+
+    const CFG: &str = "[core]\n\tprecomposeunicode = false\n";
+    let config = repo.config()?;
+    let mut backend = std::ptr::null_mut();
+
+    // SAFETY: `backend` is written by libgit2 on success and ownership passes to `config` in
+    // `git_config_add_backend`; `CFG` outlives both calls and its length is passed explicitly.
+    unsafe {
+        let rc = git_config_backend_from_string(&raw mut backend, CFG.as_ptr().cast(), CFG.len(), std::ptr::null_mut());
+        if rc < 0 {
+            return Err(git2::Error::last_error(rc));
+        }
+        let rc = libgit2_sys::git_config_add_backend(config.raw(), backend, libgit2_sys::GIT_CONFIG_LEVEL_APP, repo.raw(), 0);
+        if rc < 0 {
+            return Err(git2::Error::last_error(rc));
+        }
+    }
+    Ok(())
 }
 
 /// Emit an OSC-8 hyperlink escape sequence.

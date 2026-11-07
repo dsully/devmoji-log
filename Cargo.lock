@@ -185,6 +185,7 @@ dependencies = [
  "git-conventional",
  "git2",
  "jiff",
+ "libgit2-sys",
 ]
 
 [[package]]

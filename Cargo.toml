@@ -20,8 +20,9 @@ clap = { version = "4", features = ["derive"] }
 colored = "3"
 emojis = "0.9.1"
 git-conventional = "1"
-git2 = { version = "0.21", default-features = false }
+git2 = { version = "0.21", default-features = false, features = ["vendored-libgit2"] }
 jiff = { version = "0.2", default-features = false, features = ["std"] }
+libgit2-sys = { version = "0.18", default-features = false }
 
 # https://stackoverflow.com/a/74545562/81120
 [lints.clippy]
