@@ -1,5 +1,6 @@
 #![cfg_attr(not(test), no_main)]
 
+mod arena;
 mod commit;
 
 use clap::Parser;
@@ -40,6 +41,7 @@ extern "C" fn c_main(_argc: std::ffi::c_int, _argv: *const *const std::ffi::c_ch
 }
 
 fn run() -> anyhow::Result<()> {
+    arena::install();
     let cli = Cli::parse();
 
     // `now - commit` yields an hours-only span, so the zone of `now` never affects output;
