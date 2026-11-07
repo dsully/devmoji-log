@@ -1,6 +1,6 @@
 [package]
 name = "devmoji-log"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "Devmoji git log"
 readme = "README.md"
@@ -48,7 +48,6 @@ filter_map_next = "warn"
 flat_map_option = "warn"
 float_cmp_const = "warn"
 fn_params_excessive_bools = "warn"
-from_iter_instead_of_collect = "warn"
 if_let_mutex = "warn"
 implicit_clone = "warn"
 implicit_return = { level = "allow", priority = 1 }

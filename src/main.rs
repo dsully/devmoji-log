@@ -2,6 +2,7 @@
 
 mod arena;
 mod commit;
+#[cfg(target_os = "macos")]
 mod sha256;
 
 use clap::Parser;
