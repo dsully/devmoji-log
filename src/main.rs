@@ -2,6 +2,7 @@
 
 mod arena;
 mod commit;
+mod sha256;
 
 use clap::Parser;
 use jiff::Timestamp;
